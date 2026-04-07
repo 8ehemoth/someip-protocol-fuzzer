@@ -9,15 +9,15 @@ load_contrib("automotive.someip")
 
 class Template():
 
-    def read_capture(self):
+    def read_capture(self):    # 패킷(PCAP) 읽는 함수
         plist = sniff(filter=config["Fuzzer"]["Filter"], prn=self.log_packet, offline=config["Fuzzer"]["Trace"])
         return plist
 
     @staticmethod
-    def log_packet(packet):
+    def log_packet(packet):   # trace 읽을때 어떤 패킷이 들어왔는지 간단히 보여주는 용도.
         log_info(packet.summary())
 
-    def create_template(self, packets):
+    def create_template(self, packets):   # 패킷에서 필드값을 뽑아 템플릿 dict를 만드는 함수.
         template = {}
         while len(packets):
             packet = packets.pop(0)
@@ -28,7 +28,7 @@ class Template():
             self.__add_to_template(template, outgoing, payload)
         return template
 
-    def save_template(self, template):
+    def save_template(self, template):   # 메모리 안의 템플릿 dict를 json 파일로 저장하는 함수
         template_json = []
         for key, value in template.items():
             template = {
@@ -40,7 +40,7 @@ class Template():
         with open(config["Fuzzer"]["Template"], "w") as outfile:
             json.dump(template_json, outfile, indent = 4, cls=TemplateEncoder)
 
-    def print_template(self, template):
+    def print_template(self, template):   # 저장없이 화면에 json 형태로 출력하는 디버깅용 함수
         template_json = []
         for key, value in template.items():
             template = {
@@ -51,7 +51,7 @@ class Template():
             template_json.append(template)
         print(json.dumps(template_json, default=str, indent=4, sort_keys=False))
 
-    def read_template(self):
+    def read_template(self):   # 저장된 json 파일을 읽고 메모리에 dict 형태로 복원
         with open(config["Fuzzer"]["Template"], "r") as infile:
             template_json = json.load(infile)
         template = {}
@@ -59,7 +59,7 @@ class Template():
             template[(item["outgoing"], item["layer"])] = {"fields": item["fields"]}
         return template
 
-    def __add_to_template(self, template, outgoing, payload):
+    def __add_to_template(self, template, outgoing, payload):   # 방향 + 레이어 종류를 기준으로 템플릿 분
         key = (outgoing, type(payload).__name__) # example: (True, SOMEIP)
         if key not in template:
             template[key] = {}
